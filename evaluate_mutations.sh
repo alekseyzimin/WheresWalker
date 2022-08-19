@@ -126,16 +126,16 @@ if [ ! -e intervals.success ];then
   paste $DY_VCF.DY.txt $WT_VCF.WT.txt |awk '{if(NF==6) print $1" "$2" "$3" "$6}'| $MYPATH/compute_intervals.pl > intervals.txt.tmp && \
   mv intervals.txt.tmp intervals.txt && \
   log "Intervals are in intervals.txt" && \
-  touch intervals.success
+  touch intervals.success || error_exit "Computing intervals failed"
 fi
 
 if [ ! -r prepare.success ];then
   log "Preparing ANNOVAR database"
-  $MYPATH/ANNOVAR/tools/gtfToGenePred -genePredExt $ANNOTAION_GTF DR_refGene.txt.tmp && \
+  $MYPATH/ANNOVAR/tools/gtfToGenePred -genePredExt <(grep -v unknown_transcript $ANNOTATION_GTF) DR_refGene.txt.tmp && \
   mv DR_refGene.txt.tmp DR_refGene.txt && \
-  perl $MYPATH/ANNOVAR/annovar/retrieve_seq_from_fasta.pl --format refGene --seqfile $GENOME_FNA DR_refGene.txt --out DR_refGeneMrna.fa.tmp && \
+  perl $MYPATH/ANNOVAR/annovar/retrieve_seq_from_fasta.pl --format refGene --seqfile $GENOME DR_refGene.txt --out DR_refGeneMrna.fa.tmp 2>/dev/null && \
   mv DR_refGeneMrna.fa.tmp DR_refGeneMrna.fa && \
-  touch prepare.success
+  touch prepare.success || error_exit "Preparing ANNOVAR database failed"
 fi
 
 if [ ! -e examine_genes.success ];then
@@ -168,13 +168,24 @@ if [ ! -e examine_genes.success ];then
     }
   }' > genes_to_examine.with_WT_freq.txt.tmp && \
   mv  genes_to_examine.with_WT_freq.txt.tmp  genes_to_examine.with_WT_freq.txt && \
-  log "Mutations in genes are annotated in genes_to_examine.with_WT_freq.txt"
+  log "Mutations in genes are annotated in genes_to_examine.with_WT_freq.txt" && touch examine_genes.success || error_exit "Examining mutations failed"
+fi
+
+if [ ! -e add_sift.success ];then
   if [ -s $GVF_FILE ];then
     log "Adding SIFT information"
     awk  '{for(i=1;i<NF;i++){if($i=="tolerated" || $i=="tolerated_-_low_confidence") ind=i+1;}print $1,$4,$(ind-1),$ind}' $MYPATH/$GVF_FILE |\
     perl -ane '$h{"$F[0] $F[1]"}=$F[3];END{$h{"Chr Coord"}="SIFT";open(FILE,"genes_to_examine.with_WT_freq.txt");while($line=<FILE>){chomp($line);@f=split(/\t/,$line);print "$line\t";if(defined($h{"$f[0] $f[1]"})){print $h{"$f[0] $f[1]"},"\n";}else{print "NA\n"}}}' > genes_to_examine.with_WT_freq.wSIFT.txt.tmp && \
     mv genes_to_examine.with_WT_freq.wSIFT.txt.tmp genes_to_examine.with_WT_freq.wSIFT.txt && \
-    log "Mutations in genes with SIFT information added are in genes_to_examine.with_WT_freq.wSIFT.txt"
-  fi && \
-touch examine_genes.success
+    log "Mutations in genes with SIFT information added are in genes_to_examine.with_WT_freq.wSIFT.txt" && touch add_sift.success
+  fi
 fi
+
+if [ -e examine_genes.success ];then
+  log "Candidate mutations are in genes_to_examine.with_WT_freq.txt"
+fi
+if [ -e add_sift.success ];then
+  log "Candidate mutations with SIFT scores are in genes_to_examine.with_WT_freq.wSIFT.txt"
+fi
+
+
