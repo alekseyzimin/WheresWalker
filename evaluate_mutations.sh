@@ -40,7 +40,7 @@ echo "-w <wild type vcf file:string MANDATORY>"
 echo "-a <annotation gtf file:string MANDATORY>"
 echo "-g <genome fasta file:string MANDATORY>"
 echo "-f <GVF file:string optional>"
-echo "-t <threshold:int default:2>"
+echo "-t <threshold:float default:2>"
 echo "-v verbose switch"
 echo "-h help message"
 echo ""
@@ -123,9 +123,14 @@ if [ ! -e frequencies.success ];then
 fi
 
 if [ ! -e intervals.success ];then
-  paste $DY_VCF.DY.txt $WT_VCF.WT.txt |awk '{if(NF==6) print $1" "$2" "$3" "$6}'| $MYPATH/compute_intervals.pl > intervals.txt.tmp && \
+  paste $DY_VCF.DY.txt $WT_VCF.WT.txt |awk '{if(NF==6) print $1" "$2" "$3" "$6}'| $MYPATH/compute_intervals.pl $THRESH > intervals.txt.tmp && \
   mv intervals.txt.tmp intervals.txt && \
-  log "Intervals are in intervals.txt" && \
+  NUM_INTERVALS=`wc -l intervals.txt | awk '{print $1-1}'` && \
+  if [ $NUM_INTERVALS -lt 1 ];then
+    error_exit "No intervals found, try re-running with a lower threshold (-t), current threshold is $THRESH"
+  else
+    log "Found $NUM_INTERVALS intervals in intervals.txt"
+  fi && \
   touch intervals.success || error_exit "Computing intervals failed"
 fi
 

@@ -7,6 +7,7 @@ my $step_index=int($ma_window/ $step_size);
 my $ctg="";
 my $threshold=2;
 my $min_window=4000000;
+$threshold=$ARGV[0] if($ARGV[0]>0);
 print "Contig Window_start Window_end\n";
 while($line=<STDIN>){
 chomp($line);
