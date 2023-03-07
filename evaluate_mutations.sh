@@ -148,8 +148,8 @@ if [ ! -e examine_genes.success ];then
   cat <(grep '^#'  $DY) \
   <(cat \
   <(tail -n +2 intervals.txt |perl -ane '{print "$F[0]\t$F[1]\tstart\n$F[0]\t$F[2]\tend\n"}') \
-  <(perl -ane '{$h{$F[0]}=1}{open(FILE,"'$DY'");while($line=<FILE>){chomp($line);@f=split(/\t/,$line,2);print "$line\n" if(defined($h{$f[0]}));}}' intervals.txt) \
-  |sort -k1,1 -k2,2n -S 10% | awk 'BEGIN{flag=0;}{if($3=="start"){flag=1}else if($3=="end"){flag=0};if(flag){split($10,a,":");if($1 ~/^#/|| ((a[4]<=int("'$THRESH'") && a[6]>int("'$THRESH'")) && (length($4)==length($5)) && (length($4)<=2) && $4!="N" && $5!="N")) print $0}}') | uniq >  $DY_VCF.filtered.vcf && \
+  <(perl -ane '{$h{$F[0]}=1}END{open(FILE,"'$DY'");while($line=<FILE>){chomp($line);@f=split(/\t/,$line,2);print "$line\n" if(defined($h{$f[0]}));}}' intervals.txt) \
+  |sort -k1,1 -k2,2n -S 10% | awk 'BEGIN{flag=0;}{if($3=="start"){flag=1}else if($3=="end"){flag=0};if(flag){split($10,a,":");if($1 ~/^#/|| ((a[4]<2 && a[6]>=2) && (length($4)==length($5)) && (length($4)<=2) && $4!="N" && $5!="N")) print $0}}') | uniq >  $DY_VCF.filtered.vcf && \
   perl $MYPATH/ANNOVAR/annovar/table_annovar.pl $DY_VCF.filtered.vcf ./ --vcfinput --outfile annov -buildver DR --protocol refGene --operation g 1>annovar_out.txt 2>&1 && \
   awk -F '\t' '{split($NF,a,":");if($6~/UTR/ || $9=="stoploss" || $9=="stopgain" || $9=="startloss" || $9=="startgain" || $9=="nonsynonymous SNV" || $9=="nonframeshift substitution") print $1"\t"$2"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"a[4]"\t"a[6]}' annov.DR_multianno.txt | \
   sed 's/ /_/g'|  \
@@ -189,8 +189,15 @@ fi
 if [ -e examine_genes.success ];then
   log "Candidate mutations are in genes_to_examine.with_WT_freq.txt"
 fi
+
 if [ -e add_sift.success ];then
   log "Candidate mutations with SIFT scores are in genes_to_examine.with_WT_freq.wSIFT.txt"
 fi
 
+if [ -e examine_indels.success ];then
+  log "Computing indel bias and PCR targets"
+  get_indels.sh $DY $WT && 
+  touch examine_indels.success && \
+  log "Indel bias index is in mut.indels.index.txt and the PCR targets are in mut.pcr_targets.txt"
+fi
 
