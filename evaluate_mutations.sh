@@ -196,7 +196,7 @@ fi
 
 if [ -e examine_indels.success ];then
   log "Computing indel bias and PCR targets"
-  get_indels.sh $DY $WT && 
+  bash $MYPATH/get_indels.sh $DY $WT && 
   touch examine_indels.success && \
   log "Indel bias index is in mut.indels.index.txt and the PCR targets are in mut.pcr_targets.txt"
 fi
