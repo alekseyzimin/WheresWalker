@@ -123,7 +123,7 @@ if [ ! -e frequencies.success ];then
 fi
 
 if [ ! -e intervals.success ];then
-  paste $DY_VCF.DY.txt $WT_VCF.WT.txt |awk '{if(NF==6) print $1" "$2" "$3" "$6}'| $MYPATH/compute_intervals.pl $THRESH > intervals.txt.tmp && \
+  paste $DY_VCF.DY.txt $WT_VCF.WT.txt |awk '{if(NF==6) print $1" "$2" "$3" "$6}'| $MYPATH/compute_intervals.pl $THRESH 1>intervals.txt.tmp  2>$DY_VCF.$WT_VCF.hIndex.MA.txt && \
   mv intervals.txt.tmp intervals.txt && \
   NUM_INTERVALS=`wc -l intervals.txt | awk '{print $1-1}'` && \
   if [ $NUM_INTERVALS -lt 1 ];then

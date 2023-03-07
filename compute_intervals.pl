@@ -52,6 +52,10 @@ sub detect_windows {
       $window_start=-1;
     }
   }
+  #output the moving average on STDERR
+  for($i=$step_index;$i<$#diffs-$step_index;$i++){
+    print STDERR "$ctg $coords[$i] $ma[$i-$step_index]\n";
+  }
 } 
 
 
