@@ -134,6 +134,10 @@ if [ ! -e intervals.success ];then
   touch intervals.success || error_exit "Computing intervals failed"
 fi
 
+if [ -e intervals.success ];then
+  log "Detected intervals are in intervals.txt; the moving average is in $DY_VCF.$WT_VCF.hIndex.MA.txt"
+fi
+
 if [ ! -r prepare.success ];then
   log "Preparing ANNOVAR database"
   $MYPATH/ANNOVAR/tools/gtfToGenePred -genePredExt <(grep -v unknown_transcript $ANNOTATION_GTF) DR_refGene.txt.tmp && \
@@ -186,6 +190,12 @@ if [ ! -e add_sift.success ];then
   fi
 fi
 
+if [ ! -e examine_indels.success ];then
+  log "Computing indel bias and PCR targets"
+  bash $MYPATH/get_indels.sh $DY $WT && \
+  touch examine_indels.success 
+fi
+
 if [ -e examine_genes.success ];then
   log "Candidate mutations are in genes_to_examine.with_WT_freq.txt"
 fi
@@ -195,9 +205,7 @@ if [ -e add_sift.success ];then
 fi
 
 if [ -e examine_indels.success ];then
-  log "Computing indel bias and PCR targets"
-  bash $MYPATH/get_indels.sh $DY $WT && 
-  touch examine_indels.success && \
   log "Indel bias index is in mut.indels.index.txt and the PCR targets are in mut.pcr_targets.txt"
 fi
+
 
