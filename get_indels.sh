@@ -3,9 +3,10 @@
 DY=$1;
 WT=$2;
 THRESH=2;
+CHROM=$3;
 cat \
   <(cat  \
-    <(tail -n +2 intervals.txt |perl -ane '{print "$F[0]\t",$F[1]-1000000,"\tstart\n$F[0]\t",$F[2]+1000000,"\tend\n"}')  \
+    <(tail -n +2 intervals.txt |perl -ane '{print "$F[0]\t",$F[1]-1000000,"\tstart\n$F[0]\t",$F[2]+1000000,"\tend\n" if($F[0] eq "'$CHROM'");}')  \
     <(perl -ane '{$h{$F[0]}=1}END{
       open(FILE,"'$DY'");
       while($line=<FILE>){
@@ -30,7 +31,7 @@ cat \
       }
     }' | uniq ) \
   <(cat  \
-    <(tail -n +2 intervals.txt |perl -ane '{print "$F[0]\t",$F[1]-1000000,"\tstart\n$F[0]\t",$F[2]+1000000,"\tend\n"}')  \
+    <(tail -n +2 intervals.txt |perl -ane '{print "$F[0]\t",$F[1]-1000000,"\tstart\n$F[0]\t",$F[2]+1000000,"\tend\n" if($F[0] eq "'$CHROM'");}')  \
     <(perl -ane '{$h{$F[0]}=1}END{
       open(FILE,"'$WT'");
       while($line=<FILE>){
@@ -55,7 +56,7 @@ cat \
       }
     }' | uniq ) | \
 sort -S 10% -k4,4 -k5,5n -k1,1r| \
-uniq -D -f 3 | tee mut.indels.both.txt |\
+uniq -D -f 3 | tee $CHROM.mut.indels.both.txt |\
 grep ^DY |\
 perl -ane 'BEGIN{$window=750000;$step=50000;}{
   push(@coords,$F[4]);
@@ -84,7 +85,6 @@ END{
   for($i=0;$i<=$#centers;$i++){
     print "$centers[$i] $counts[$i]\n";
   }
-}' > mut.indels.index.txt.tmp && mv mut.indels.index.txt.tmp  mut.indels.index.txt && \
-awk -F '\t' '{if($1 ~ /^WT/){rowt=$2;aowt=$3}else{if($2<=1 && $3>1) print "DY\t"$2"\t"$3"\tWT\t"rowt"\t"aowt"\t"$4"\t"$5"\t"$6"\t"$7"\t"length($7)-length($6)}}' mut.indels.both.txt >mut.pcr_targets.txt.tmp && \
-mv mut.pcr_targets.txt.tmp mut.pcr_targets.txt && \
-rm -f mut.indels.both.txt
+}' > $CHROM.mut.indels.index.txt.tmp && mv $CHROM.mut.indels.index.txt.tmp  $CHROM.mut.indels.index.txt && \
+awk -F '\t' '{if($1 ~ /^WT/){rowt=$2;aowt=$3}else{if($2<=1 && $3>1) print "DY\t"$2"\t"$3"\tWT\t"rowt"\t"aowt"\t"$4"\t"$5"\t"$6"\t"$7"\t"length($7)-length($6)}}' $CHROM.mut.indels.both.txt >$CHROM.mut.pcr_targets.txt.tmp && \
+mv $CHROM.mut.pcr_targets.txt.tmp $CHROM.mut.pcr_targets.txt && rm -f $CHROM.mut.indels.both.txt

@@ -177,6 +177,30 @@ if [ ! -e examine_genes.success ];then
     }
   }' > genes_to_examine.with_WT_freq.txt.tmp && \
   mv  genes_to_examine.with_WT_freq.txt.tmp  genes_to_examine.with_WT_freq.txt && \
+
+  awk -F '\t' '{split($NF,a,":");if(!($6=="intergenic" || $6~/intronic/)) print $1"\t"$2"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"a[4]"\t"a[6]}' annov.DR_multianno.txt | \
+  sed 's/ /_/g'|  \
+  perl -ane 'BEGIN{
+    print "Chr\tCoord\tRef\tAlt\tFunc.refGene\tGene.refGene\tGeneDetail.refGene\tExonicFunc.refGene\tAAChange.refGene\tmut.ref\tmut.alt\twt.ref\twt.alt\tratio\n";
+    open(FILE,"'$WT'"); 
+    while($line=<FILE>){
+      chomp($line);
+      @f=split(/\t/,$line); 
+      @ff=split(":",$f[-1]);
+      $ratio=$ff[3]/($ff[5]+0.00000001);
+      $h{"$f[0] $f[1]"}="$ff[3]\t$ff[5]\t$ratio";
+    }
+  }
+  {
+    if(defined($h{"$F[0] $F[1]"})){
+      @f=split(/\t/,$h{"$F[0] $F[1]"});
+      print join("\t",@F),"\t",$h{"$F[0] $F[1]"},"\n" if($f[2]>1 && $f[2]<4);
+    }else{
+      print join("\t",@F),"\tNA\tNA\tNA\n"
+    }
+  }' > genes_to_examine.with_WT_freq.ALL.txt.tmp && \
+  mv  genes_to_examine.with_WT_freq.ALL.txt.tmp  genes_to_examine.with_WT_freq.ALL.txt && \
+
   log "Mutations in genes are annotated in genes_to_examine.with_WT_freq.txt" && touch examine_genes.success || error_exit "Examining mutations failed"
 fi
 
@@ -192,7 +216,9 @@ fi
 
 if [ ! -e examine_indels.success ];then
   log "Computing indel bias and PCR targets"
-  bash $MYPATH/get_indels.sh $DY $WT && \
+  for c in $(awk '{if($2 != "Window_start") print $1;}' intervals.txt );do
+    bash $MYPATH/get_indels.sh $DY $WT $c 
+  done && \
   touch examine_indels.success 
 fi
 
@@ -205,7 +231,9 @@ if [ -e add_sift.success ];then
 fi
 
 if [ -e examine_indels.success ];then
-  log "Indel bias index is in mut.indels.index.txt and the PCR targets are in mut.pcr_targets.txt"
+  for c in $(awk '{if($2 != "Window_start") print $1;}' intervals.txt );do
+    log "Indel bias index is in $c.mut.indels.index.txt and the PCR targets are in $c.mut.pcr_targets.txt"
+  done
 fi
 
 
