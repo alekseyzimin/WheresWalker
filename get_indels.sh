@@ -6,7 +6,7 @@ THRESH=2;
 CHROM=$3;
 cat \
   <(cat  \
-    <(tail -n +2 intervals.txt |perl -ane '{print "$F[0]\t",$F[1]-1000000,"\tstart\n$F[0]\t",$F[2]+1000000,"\tend\n" if($F[0] eq "'$CHROM'");}')  \
+    <(tail -n +2 intervals.txt |perl -ane '{print "$F[0]\t",$F[1],"\tstart\n$F[0]\t",$F[2],"\tend\n" if($F[0] eq "'$CHROM'");}')  \
     <(perl -ane '{$h{$F[0]}=1}END{
       open(FILE,"'$DY'");
       while($line=<FILE>){
@@ -31,7 +31,7 @@ cat \
       }
     }' | uniq ) \
   <(cat  \
-    <(tail -n +2 intervals.txt |perl -ane '{print "$F[0]\t",$F[1]-1000000,"\tstart\n$F[0]\t",$F[2]+1000000,"\tend\n" if($F[0] eq "'$CHROM'");}')  \
+    <(tail -n +2 intervals.txt |perl -ane '{print "$F[0]\t",$F[1],"\tstart\n$F[0]\t",$F[2],"\tend\n" if($F[0] eq "'$CHROM'");}')  \
     <(perl -ane '{$h{$F[0]}=1}END{
       open(FILE,"'$WT'");
       while($line=<FILE>){

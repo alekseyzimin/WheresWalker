@@ -1,8 +1,8 @@
 #!/usr/bin/env perl
 #this code computes intervals of relative homozygosity
 my @diffs=();
-my $ma_window=100000;
-my $step_size=10000;
+my $ma_window=750000;
+my $step_size=25000;
 my $step_index=int($ma_window/ $step_size);
 my $ctg="";
 my $threshold=2;
@@ -46,9 +46,12 @@ sub detect_windows {
       $window_start=$coords[$i];
       $window_end=-1;
     }
-    if($ma[$i-$step_index]<0 && $window_start>-1){
+    if($ma[$i-$step_index]<=$threshold/2 && $window_start>-1){
       $window_end=$coords[$i];
-      print "$ctg $window_start $window_end\n" if($window_end-$window_start>=$min_window);
+      $window_start=$window_start-$ma_window;
+      $window_start=0 if($window_start<0);
+      $window_end=$window_end+$ma_window;
+      print "$ctg $window_start $window_end\n" if($window_end-$window_start>=$min_window-2*$ma_window);
       $window_start=-1;
     }
   }
