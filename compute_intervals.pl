@@ -5,13 +5,13 @@ my $ma_window=750000;
 my $step_size=25000;
 my $step_index=int($ma_window/ $step_size);
 my $ctg="";
-my $threshold=4;
+my $threshold=0;
 my $min_window=4000000;
 my @intervals=();
 my @lines=();
 my @ma=();
 my %ma_arr=();
-$threshold=$ARGV[0] if($ARGV[0]>0);
+#$threshold=$ARGV[0] if($ARGV[0]>0);
 print "Contig Window_start Window_end\n";
 
 while($line=<STDIN>){
@@ -45,7 +45,7 @@ while(scalar(@intervals)==0){
   }
   #print "threshold = $threshold intervals =  $#intervals\n";
   $first_pass=0;
-  $threshold-=.02;
+  $threshold-=.01;
   last if($threshold < 0.02);
 }
 
@@ -63,7 +63,9 @@ sub compute_ma {
     }
     $dave=$dave/($step_index*2+1);
     $mave=$mave/($step_index*2+1);
-    push(@ma,$dave/(2+$mave));
+    my $ma_value=$dave/(2+$mave);
+    $threshold=$ma_value if($ma_value>$threshold);
+    push(@ma,$ma_value);
   }
 }
 
