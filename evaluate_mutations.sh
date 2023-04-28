@@ -126,11 +126,10 @@ if [ ! -e intervals.success ];then
   paste $DY_VCF.DY.txt $WT_VCF.WT.txt |awk '{if(NF==6) print $1" "$2" "$3" "$6}'| $MYPATH/compute_intervals.pl $THRESH 1>intervals.txt.tmp  2>$DY_VCF.$WT_VCF.hIndex.MA.txt && \
   mv intervals.txt.tmp intervals.txt && \
   NUM_INTERVALS=`wc -l intervals.txt | awk '{print $1-1}'` && \
-  if [ $NUM_INTERVALS -lt 1 ];then
-    error_exit "No intervals found, try re-running with a lower threshold (-t), current threshold is $THRESH"
-  else
-    log "Found $NUM_INTERVALS intervals in intervals.txt"
+  if [ $NUM_INTERVALS -gt 1 ];then
+    log "WARNING: More than one interval found, check the moving averages in $DY_VCF.$WT_VCF.hIndex.MA.txt"
   fi && \
+  log "Found $NUM_INTERVALS intervals in intervals.txt" && \
   touch intervals.success || error_exit "Computing intervals failed"
 fi
 

@@ -32,8 +32,9 @@ while(scalar(@intervals)==0){
           for($i=$step_index;$i<$#diffs-$step_index;$i++){
             print STDERR "$ctg $coords[$i] $ma[$i-$step_index]\n";
           }
+        }else{
+          detect_windows(); 
         }
-        detect_windows(); 
       }
       @diffs=();
       @coords=();
@@ -45,7 +46,7 @@ while(scalar(@intervals)==0){
   }
   #print "threshold = $threshold intervals =  $#intervals\n";
   $first_pass=0;
-  $threshold-=.01;
+  $threshold-=.001;
   last if($threshold < 0.02);
 }
 
