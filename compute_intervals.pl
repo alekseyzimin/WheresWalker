@@ -5,28 +5,55 @@ my $ma_window=750000;
 my $step_size=25000;
 my $step_index=int($ma_window/ $step_size);
 my $ctg="";
-my $threshold=2;
+my $threshold=4;
 my $min_window=4000000;
+my @intervals=();
+my @lines=();
+my @ma=();
+my %ma_arr=();
 $threshold=$ARGV[0] if($ARGV[0]>0);
 print "Contig Window_start Window_end\n";
+
 while($line=<STDIN>){
-chomp($line);
-my @f=split(/\s+/,$line);
-if(not($f[0] eq $ctg)){
-  if($#diffs>0){
-    detect_windows();
-  }
-  @diffs=();
-  @coords=();
-  }
-  $ctg=$f[0];
-  push(@diffs,$f[3]-$f[2]);
-  push(@mutfreq,$f[2]);
-  push(@coords,$f[1]);
+  chomp($line);
+  push(@lines,$line);
 }
 
-sub detect_windows {
-  my @ma=();
+my $first_pass=1;
+while(scalar(@intervals)==0){
+  foreach $line(@lines){
+    my @f=split(/\s+/,$line);
+    if(not($f[0] eq $ctg)){
+      if($#diffs>0){
+        if($first_pass){
+          @ma=();
+          compute_ma();
+          $ma_arr{$ctg}=[@ma];
+          for($i=$step_index;$i<$#diffs-$step_index;$i++){
+            print STDERR "$ctg $coords[$i] $ma[$i-$step_index]\n";
+          }
+        }
+        detect_windows(); 
+      }
+      @diffs=();
+      @coords=();
+    }
+    $ctg=$f[0];
+    push(@diffs,$f[3]-$f[2]);
+    push(@mutfreq,$f[2]);
+    push(@coords,$f[1]);
+  }
+  #print "threshold = $threshold intervals =  $#intervals\n";
+  $first_pass=0;
+  $threshold-=.02;
+  last if($threshold < 0.02);
+}
+
+foreach my $in(@intervals){
+  print "$in\n";
+}
+
+sub compute_ma {
   for($i=$step_index;$i<$#diffs-$step_index;$i++){
     my $dave=0;
     my $mave=0;
@@ -38,26 +65,37 @@ sub detect_windows {
     $mave=$mave/($step_index*2+1);
     push(@ma,$dave/(2+$mave));
   }
-  #we computed MA's, now let's detect windows
+}
+
+sub detect_windows {
   my $window_start=-1;
   my $window_end=-1;
+  my @ma_local=@{$ma_arr{$ctg}};
+  my $min_value=0.01;
   for($i=$step_index;$i<$#diffs-$step_index;$i++){
-    if($ma[$i-$step_index]>=$threshold && $window_start==-1){
-      $window_start=$coords[$i];
+    if($ma_local[$i-$step_index]>=$threshold && $window_start==-1){
+      my $j=$i;
+      while($ma_local[$j-$step_index]>$min_value && $j>=$step_index){
+        $j--;
+      }
+      $window_start=$coords[$j];
       $window_end=-1;
     }
-    if($ma[$i-$step_index]<=$threshold/2 && $window_start>-1){
+    if($ma_local[$i-$step_index]<=$min_value && $window_start>-1){
       $window_end=$coords[$i];
       $window_start=$window_start-$ma_window;
       $window_start=0 if($window_start<0);
       $window_end=$window_end+$ma_window;
-      print "$ctg $window_start $window_end\n" if($window_end-$window_start>=$min_window-2*$ma_window);
+      #print "candidate window $ctg $window_start $window_end\n";
+      push(@intervals,"$ctg $window_start $window_end") if($window_end-$window_start>=$min_window+2*$ma_window);
       $window_start=-1;
     }
   }
-  #output the moving average on STDERR
-  for($i=$step_index;$i<$#diffs-$step_index;$i++){
-    print STDERR "$ctg $coords[$i] $ma[$i-$step_index]\n";
+  #check if window started, but did not end
+  if($window_start > 0){
+    $window_end=$coords[-1];
+    #print "end candidate window $ctg $window_start $window_end\n";
+    push(@intervals,"$ctg $window_start $window_end") if($window_end-$window_start>=$min_window+2*$ma_window);
   }
 } 
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 DY=$1
 WT=$2
-THRESH=2
+THRESH=4
 MYPATH="`dirname \"$0\"`"
 MYPATH="`( cd \"$MYPATH\" && pwd )`"
 set -o pipefail
@@ -35,12 +35,12 @@ function error_exit {
 function usage {
 echo "Usage:"
 echo "evaluate_mutations.sh [arguments]"
-echo "-m <mutant vcf file:string MANDATORY>"
-echo "-w <wild type vcf file:string MANDATORY>"
-echo "-a <annotation gtf file:string MANDATORY>"
-echo "-g <genome fasta file:string MANDATORY>"
+echo "-m <mutant vcf file>:path MANDATORY"
+echo "-w <wild type vcf file>:path MANDATORY"
+echo "-a <annotation gtf file>:path MANDATORY"
+echo "-g <genome fasta file>:path MANDATORY"
 echo "-f <GVF file:string optional>"
-echo "-t <threshold:float default:2>"
+echo "-t <starting threshold, the program will iterate down from this threshold, until an interval is found>:float default:4"
 echo "-v verbose switch"
 echo "-h help message"
 echo ""
