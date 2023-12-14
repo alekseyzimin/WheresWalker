@@ -130,20 +130,21 @@ if [ ! -e intervals.success ];then
     log "WARNING: More than one interval found, check the moving averages in $DY_VCF.$WT_VCF.hIndex.MA.txt"
   fi && \
   log "Found $NUM_INTERVALS intervals in intervals.txt" && \
-  touch intervals.success || error_exit "Computing intervals failed"
+  touch intervals.success && rm -f prepare.success examine_indels.success examine_genes.success || error_exit "Computing intervals failed"
 fi
 
 if [ -e intervals.success ];then
-  log "Detected intervals are in intervals.txt; the moving average is in $DY_VCF.$WT_VCF.hIndex.MA.txt"
+  log "Detected intervals are in intervals.txt; the moving average is in $DY_VCF.$WT_VCF.hIndex.MA.txt" && \
+  cat intervals.txt
 fi
 
-if [ ! -r prepare.success ];then
+if [ ! -e prepare.success ];then
   log "Preparing ANNOVAR database"
   $MYPATH/ANNOVAR/tools/gtfToGenePred -genePredExt <(grep -v unknown_transcript $ANNOTATION_GTF) DR_refGene.txt.tmp && \
   mv DR_refGene.txt.tmp DR_refGene.txt && \
   perl $MYPATH/ANNOVAR/annovar/retrieve_seq_from_fasta.pl --format refGene --seqfile $GENOME DR_refGene.txt --out DR_refGeneMrna.fa.tmp 2>/dev/null && \
   mv DR_refGeneMrna.fa.tmp DR_refGeneMrna.fa && \
-  touch prepare.success || error_exit "Preparing ANNOVAR database failed"
+  touch prepare.success && rm -f examine_genes.success || error_exit "Preparing ANNOVAR database failed"
 fi
 
 if [ ! -e examine_genes.success ];then

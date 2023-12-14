@@ -2,7 +2,7 @@
 #this code computes intervals of relative homozygosity
 my @diffs=();
 my $ma_window=750000;
-my $step_size=25000;
+my $step_size=10000;
 my $step_index=int($ma_window/ $step_size);
 my $ctg="";
 my $threshold=0;
