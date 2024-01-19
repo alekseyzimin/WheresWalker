@@ -673,13 +673,19 @@ sub translateDNA {
 	}
 	
 	while ($seq =~ m/(...)/g) {
-		if (uc $chr eq 'M' or uc $chr eq 'MT') {		#process chrM variants correctly
-			defined $codon1m{$1} or print "WARNING: invalid triplets found in DNA sequence to be translated: <$1> in <$seq>\n" and die;
-			$protein .= $codon1m{$1};
-		} else {
-			defined $codon1{$1} or print "WARNING: invalid triplets found in DNA sequence to be translated: <$1> in <$seq>\n" and die;
-			$protein .= $codon1{$1};
-		}
+	  if (uc $chr eq 'M' or uc $chr eq 'MT') {		#process chrM variants correctly
+	    if(defined $codon1{$1}){
+	      $protein .= $codon1{$1};
+	    }else{
+	      $protein .= "X";
+	    }
+	  } else {
+	    if(defined $codon1{$1}){
+	      $protein .= $codon1{$1};
+	    }else{
+	      $protein .= "X";
+	    }
+	  }
 	}
 	return $protein;
 }
