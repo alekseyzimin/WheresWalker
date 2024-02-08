@@ -87,6 +87,6 @@ END{
   }
 }' > $CHROM.mut.indels.index.txt.tmp && \
 mv $CHROM.mut.indels.index.txt.tmp  $CHROM.mut.indels.index.txt && \
-awk 'BEGIN{min_val=100000000;min_coord=-1}{if(NF==2){if($2<min_val){min_val=$2;min_coord=$1}}}END{print "Most likely location of the mutation is on chromosome '$CHROM' around position "min_coord}' $CHROM.mut.indels.index.txt && \
+awk 'BEGIN{max_val=0;max_coord=-1}{if(NF==2){if($2>max_val){max_val=$2;max_coord=$1}}}END{print "Most likely location of the mutation is on chromosome '$CHROM' around position "max_coord}' $CHROM.mut.indels.index.txt && \
 awk -F '\t' '{if($1 ~ /^WT/){rowt=$2;aowt=$3}else{if($2<=1 && $3>1) print "DY\t"$2"\t"$3"\tWT\t"rowt"\t"aowt"\t"$4"\t"$5"\t"$6"\t"$7"\t"length($7)-length($6)}}' $CHROM.mut.indels.both.txt >$CHROM.mut.pcr_targets.txt.tmp && \
 mv $CHROM.mut.pcr_targets.txt.tmp $CHROM.mut.pcr_targets.txt && rm -f $CHROM.mut.indels.both.txt
