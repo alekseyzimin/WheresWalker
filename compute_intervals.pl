@@ -37,6 +37,7 @@ while(scalar(@intervals)==0){
         }
       }
       @diffs=();
+      @mutfreq=();
       @coords=();
     }
     $ctg=$f[0];
@@ -65,6 +66,7 @@ sub compute_ma {
     $dave=$dave/($step_index*2+1);
     $mave=$mave/($step_index*2+1);
     my $ma_value=$dave/(2+$mave);
+    #print STDERR "DEBUG $ctg $dave $mave $ma_value\n";
     $threshold=$ma_value if($ma_value>$threshold);
     push(@ma,$ma_value);
   }
