@@ -123,13 +123,18 @@ if [ ! -e frequencies.success ];then
 fi
 
 if [ ! -e intervals.success ];then
-  paste $DY_VCF.DY.txt $WT_VCF.WT.txt |awk '{if(NF==6) print $1" "$2" "$3" "$6}'| $MYPATH/compute_intervals.pl $THRESH 1>intervals.txt.tmp  2>$DY_VCF.$WT_VCF.hIndex.MA.txt && \
+  log "Computing interval"
+  perl -e 'BEGIN{open(FILE,"'$WT_VCF'.WT.txt");while($line=<FILE>){chomp($line);@f=split(/\s+/,$line);$wt{"$f[0] $f[1]"}=$f[2];}open(FILE,"'$DY_VCF'.DY.txt");while($line=<FILE>){chomp($line);@f=split(/\s+/,$line);$dy{"$f[0] $f[1]"}=$f[2];}foreach $k(keys %wt){print "$k $dy{$k} $wt{$k}\n" if(defined($dy{$k}));}}' |\
+  sort -S 10% -k1,1 -k2,2n |\
+  tee chromosome_coord_snpMUT_snpWT.txt |\
+  $MYPATH/compute_intervals.pl $THRESH 1>intervals.txt.tmp  2>$DY_VCF.$WT_VCF.hIndex.MA.txt && \
   mv intervals.txt.tmp intervals.txt && \
+  log "SNP index is in chromosome_coord_snpMUT_snpWT.txt file" && \
   NUM_INTERVALS=`wc -l intervals.txt | awk '{print $1-1}'` && \
   if [ $NUM_INTERVALS -gt 1 ];then
     log "WARNING: More than one interval found, check the moving averages in $DY_VCF.$WT_VCF.hIndex.MA.txt"
   fi && \
-  log "Found $NUM_INTERVALS intervals in intervals.txt" && \
+  log "Found $NUM_INTERVALS interval in intervals.txt" && \
   touch intervals.success && rm -f prepare.success examine_indels.success examine_genes.success || error_exit "Computing intervals failed"
 fi
 
