@@ -6,12 +6,11 @@ my $step_size=10000;
 my $step_index=int($ma_window/ $step_size);
 my $ctg="";
 my $threshold=0;
-my $min_window=4000000;
+my $min_window=$ARGV[0];
 my @intervals=();
 my @lines=();
 my @ma=();
 my %ma_arr=();
-#$threshold=$ARGV[0] if($ARGV[0]>0);
 print "Contig Window_start Window_end\n";
 
 while($line=<STDIN>){
@@ -48,11 +47,18 @@ while(scalar(@intervals)==0){
   #print "threshold = $threshold intervals =  $#intervals\n";
   $first_pass=0;
   $threshold-=.001;
-  last if($threshold < 0.02);
+  last if($threshold < 0.01);
 }
 
-foreach my $in(@intervals){
-  print "$in\n";
+my $max_interval=0;
+my $max_interval_index=-1;
+for(my $i=0;$i<=$#intervals_sizes;$i++){
+  if($intervals_sizes[$i]>$max_interval){
+    $max_interval=$intervals_sizes[$i];
+    $max_interval_index=$i;
+  }
+  #output the biggest interval
+  print "$intervals[$max_interval_index]\n";
 }
 
 sub compute_ma {
@@ -76,13 +82,16 @@ sub detect_windows {
   my $window_start=-1;
   my $window_end=-1;
   my @ma_local=@{$ma_arr{$ctg}};
-  my $min_value=0.01;
+  my $min_value=0.005;
+  #print "DEBUG $ctg $threshold\n";
   for($i=$step_index;$i<$#diffs-$step_index;$i++){
     if($ma_local[$i-$step_index]>=$threshold && $window_start==-1){
       my $j=$i;
+      #print "DEBUG found start $ctg $threshold $coords[$i]\n";
       while($ma_local[$j-$step_index]>$min_value && $j>=$step_index){
         $j--;
       }
+      #print "DEBUG went back $ctg $threshold $coords[$j]\n";
       $window_start=$coords[$j];
       $window_end=-1;
     }
@@ -91,8 +100,9 @@ sub detect_windows {
       $window_start=$window_start-$ma_window;
       $window_start=0 if($window_start<0);
       $window_end=$window_end+$ma_window;
-      #print "candidate window $ctg $window_start $window_end\n";
+      #print "candidate window $ctg $window_start $window_end $min_window $ma_window\n";
       push(@intervals,"$ctg $window_start $window_end") if($window_end-$window_start>=$min_window+2*$ma_window);
+      push(@intervals_sizes,$window_end-$window_start) if($window_end-$window_start>=$min_window+2*$ma_window);
       $window_start=-1;
     }
   }
@@ -101,6 +111,7 @@ sub detect_windows {
     $window_end=$coords[-1];
     #print "end candidate window $ctg $window_start $window_end\n";
     push(@intervals,"$ctg $window_start $window_end") if($window_end-$window_start>=$min_window+2*$ma_window);
+    push(@intervals_sizes,$window_end-$window_start) if($window_end-$window_start>=$min_window+2*$ma_window);
   }
 } 
 

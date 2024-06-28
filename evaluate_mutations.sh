@@ -2,6 +2,7 @@
 DY=$1
 WT=$2
 THRESH=4
+MIN_WINDOW=2000000
 MYPATH="`dirname \"$0\"`"
 MYPATH="`( cd \"$MYPATH\" && pwd )`"
 set -o pipefail
@@ -40,7 +41,7 @@ echo "-w <wild type vcf file>:path MANDATORY"
 echo "-a <annotation gtf file>:path MANDATORY"
 echo "-g <genome fasta file>:path MANDATORY"
 echo "-f <GVF file:string optional>"
-echo "-t <starting threshold, the program will iterate down from this threshold, until an interval is found>:float default:4"
+echo "-d <minimum window size, decrease this if no intervals found>:int default:2000000"
 echo "-v verbose switch"
 echo "-h help message"
 echo ""
@@ -77,8 +78,8 @@ do
             export GENOME="$2";
             shift
             ;;
-        -t|--threshold)
-            export THRESH="$2";
+        -d)
+            export MIN_WINDOW="$2";
             shift
             ;;
         -v|--verbose)
@@ -127,12 +128,12 @@ if [ ! -e intervals.success ];then
   perl -e 'BEGIN{open(FILE,"'$WT_VCF'.WT.txt");while($line=<FILE>){chomp($line);@f=split(/\s+/,$line);$wt{"$f[0] $f[1]"}=$f[2];}open(FILE,"'$DY_VCF'.DY.txt");while($line=<FILE>){chomp($line);@f=split(/\s+/,$line);$dy{"$f[0] $f[1]"}=$f[2];}foreach $k(keys %wt){print "$k $dy{$k} $wt{$k}\n" if(defined($dy{$k}));}}' |\
   sort -S 10% -k1,1 -k2,2n |\
   tee chromosome_coord_snpMUT_snpWT.txt |\
-  $MYPATH/compute_intervals.pl $THRESH 1>intervals.txt.tmp  2>$DY_VCF.$WT_VCF.hIndex.MA.txt && \
+  $MYPATH/compute_intervals.pl $MIN_WINDOW 1>intervals.txt.tmp  2>$DY_VCF.$WT_VCF.hIndex.MA.txt && \
   mv intervals.txt.tmp intervals.txt && \
   log "SNP index is in chromosome_coord_snpMUT_snpWT.txt file" && \
   NUM_INTERVALS=`wc -l intervals.txt | awk '{print $1-1}'` && \
-  if [ $NUM_INTERVALS -gt 1 ];then
-    log "WARNING: More than one interval found, check the moving averages in $DY_VCF.$WT_VCF.hIndex.MA.txt"
+  if [ $NUM_INTERVALS -lt 1 ];then
+    error_exit "ERROR: No intervals interval found, try setting a lower value for minimum window size (-d parameter, default 2000000)"
   fi && \
   log "Found $NUM_INTERVALS interval in intervals.txt" && \
   touch intervals.success && rm -f prepare.success examine_indels.success examine_genes.success || error_exit "Computing intervals failed"
@@ -145,7 +146,7 @@ fi
 
 if [ ! -e prepare.success ];then
   log "Preparing ANNOVAR database"
-  $MYPATH/ANNOVAR/tools/gtfToGenePred -genePredExt <(grep -v unknown_transcript $ANNOTATION_GTF) DR_refGene.txt.tmp && \
+  $MYPATH/ANNOVAR/tools/gtfToGenePred -ignoreGroupsWithoutExons -genePredExt <(grep -v unknown_transcript $ANNOTATION_GTF | grep -v unassigned_transcript) DR_refGene.txt.tmp && \
   mv DR_refGene.txt.tmp DR_refGene.txt && \
   perl $MYPATH/ANNOVAR/annovar/retrieve_seq_from_fasta.pl --format refGene --seqfile $GENOME DR_refGene.txt --out DR_refGeneMrna.fa.tmp 2>/dev/null && \
   mv DR_refGeneMrna.fa.tmp DR_refGeneMrna.fa && \
