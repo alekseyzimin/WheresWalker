@@ -3,6 +3,7 @@ DY=$1
 WT=$2
 THRESH=4
 MIN_WINDOW=2000000
+CENTIMORGAN=750000
 MYPATH="`dirname \"$0\"`"
 MYPATH="`( cd \"$MYPATH\" && pwd )`"
 set -o pipefail
@@ -40,6 +41,7 @@ echo "-m <mutant vcf file>:path MANDATORY"
 echo "-w <wild type vcf file>:path MANDATORY"
 echo "-a <annotation gtf file>:path MANDATORY"
 echo "-g <genome fasta file>:path MANDATORY"
+echo "-c <1 centimorgan size>:int default:750000, must use number divisible by 10000"
 echo "-f <GVF file:string optional>"
 echo "-d <minimum window size, decrease this if no intervals found>:int default:2000000"
 echo "-v verbose switch"
@@ -76,6 +78,10 @@ do
             ;;
         -g|--genome)
             export GENOME="$2";
+            shift
+            ;;
+        -c)
+            export CENTIMORGAN="$2";
             shift
             ;;
         -d)
@@ -128,7 +134,7 @@ if [ ! -e intervals.success ];then
   perl -e 'BEGIN{open(FILE,"'$WT_VCF'.WT.txt");while($line=<FILE>){chomp($line);@f=split(/\s+/,$line);$wt{"$f[0] $f[1]"}=$f[2];}open(FILE,"'$DY_VCF'.DY.txt");while($line=<FILE>){chomp($line);@f=split(/\s+/,$line);$dy{"$f[0] $f[1]"}=$f[2];}foreach $k(keys %wt){print "$k $dy{$k} $wt{$k}\n" if(defined($dy{$k}));}}' |\
   sort -S 10% -k1,1 -k2,2n |\
   tee chromosome_coord_snpMUT_snpWT.txt |\
-  $MYPATH/compute_intervals.pl $MIN_WINDOW 1>intervals.txt.tmp  2>$DY_VCF.$WT_VCF.hIndex.MA.txt && \
+  $MYPATH/compute_intervals.pl $MIN_WINDOW $CENTIMORGAN 1>intervals.txt.tmp  2>$DY_VCF.$WT_VCF.hIndex.MA.txt && \
   mv intervals.txt.tmp intervals.txt && \
   log "SNP index is in chromosome_coord_snpMUT_snpWT.txt file" && \
   NUM_INTERVALS=`wc -l intervals.txt | awk '{print $1-1}'` && \

@@ -2,7 +2,7 @@
 my $ctg="";
 my @coords=();
 my $window=20000;
-my $tol=500;
+my $tol=1000;
 my $dist=10000;
 while($line=<STDIN>){
   chomp($line);
