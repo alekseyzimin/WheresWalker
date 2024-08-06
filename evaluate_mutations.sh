@@ -1,6 +1,7 @@
 #!/bin/bash
 DY=$1
 WT=$2
+GVF_FILE="gvf"
 THRESH=4
 MIN_WINDOW=2000000
 CENTIMORGAN=750000
@@ -219,7 +220,7 @@ fi
 if [ ! -e add_sift.success ];then
   if [ -s $GVF_FILE ];then
     log "Adding SIFT information"
-    awk  '{ind=-1;for(i=1;i<NF;i++){if($i=="tolerated" || $i=="tolerated_-_low_confidence") ind=i+1;} if(ind>-1){print $1,$4,$(ind-1),$ind}}' $MYPATH/$GVF_FILE |\
+    awk  '{ind=-1;for(i=1;i<NF;i++){if($i=="tolerated" || $i=="tolerated_-_low_confidence") ind=i+1;} if(ind>-1){print $1,$4,$(ind-1),$ind}}' $GVF_FILE |\
     perl -ane '$h{"$F[0] $F[1]"}=$F[3];END{$h{"Chr Coord"}="SIFT";open(FILE,"genes_to_examine.with_WT_freq.txt");while($line=<FILE>){chomp($line);@f=split(/\t/,$line);print "$line\t";if(defined($h{"$f[0] $f[1]"})){print $h{"$f[0] $f[1]"},"\n";}else{print "NA\n"}}}' > genes_to_examine.with_WT_freq.wSIFT.txt.tmp && \
     mv genes_to_examine.with_WT_freq.wSIFT.txt.tmp genes_to_examine.with_WT_freq.wSIFT.txt && \
     log "Mutations in genes with SIFT information added are in genes_to_examine.with_WT_freq.wSIFT.txt" && touch add_sift.success
