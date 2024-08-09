@@ -5,6 +5,7 @@ GVF_FILE="gvf"
 THRESH=4
 MIN_WINDOW=2000000
 CENTIMORGAN=750000
+COV=3
 MYPATH="`dirname \"$0\"`"
 MYPATH="`( cd \"$MYPATH\" && pwd )`"
 set -o pipefail
@@ -43,6 +44,7 @@ echo "-w <wild type vcf file>:path MANDATORY"
 echo "-a <annotation gtf file>:path MANDATORY"
 echo "-g <genome fasta file>:path MANDATORY"
 echo "-c <1 centimorgan size>:int default:750000, must use number divisible by 10000"
+echo "-s <minimum variant frequency -- set this higher if you have very high coverage>:int default:3"
 echo "-f <GVF file:string optional>"
 echo "-d <minimum window size, decrease this if no intervals found>:int default:2000000"
 echo "-v verbose switch"
@@ -79,6 +81,10 @@ do
             ;;
         -g|--genome)
             export GENOME="$2";
+            shift
+            ;;
+        -s)
+            export COV="$2";
             shift
             ;;
         -c)
@@ -122,9 +128,13 @@ WT_VCF=`basename $WT`
 
 if [ ! -e frequencies.success ];then
   log "Computing intervals homozygous in the mutant"
-  grep --color=auto -v '^#' $DY | awk '{split($10,a,":");if(a[4]>2 && a[6]>2) print $1" "$2" "$4" "$5" "a[4]" "a[6]}' | $MYPATH/compute_snp_freq.pl > $DY_VCF.DY.txt.tmp &
+  grep --color=auto -v '^#' $DY | \
+  awk '{split($10,a,":");if(a[4]>=int("'$COV'") && a[6]>=int("'$COV'")) print $1" "$2" "$4" "$5" "a[4]" "a[6]}' | \
+  $MYPATH/compute_snp_freq.pl > $DY_VCF.DY.txt.tmp &
   PID1=$!;
-  grep --color=auto -v '^#' $WT | awk '{split($10,a,":");if(a[4]>2 && a[6]>2) print $1" "$2" "$4" "$5" "a[4]" "a[6]}' | $MYPATH/compute_snp_freq.pl > $WT_VCF.WT.txt.tmp & 
+  grep --color=auto -v '^#' $WT | \
+  awk '{split($10,a,":");if(a[4]>=int("'$COV'") && a[6]>=int("'$COV'")) print $1" "$2" "$4" "$5" "a[4]" "a[6]}' | \
+  $MYPATH/compute_snp_freq.pl > $WT_VCF.WT.txt.tmp & 
   PID2=$!;
   wait $PID1 $PID2 && mv $DY_VCF.DY.txt.tmp $DY_VCF.DY.txt && mv $WT_VCF.WT.txt.tmp $WT_VCF.WT.txt && \
   touch frequencies.success
@@ -141,7 +151,7 @@ if [ ! -e intervals.success ];then
   NUM_INTERVALS=`wc -l intervals.txt | awk '{print $1-1}'` && \
   if [ $NUM_INTERVALS -lt 1 ];then
     error_exit "ERROR: No intervals interval found, try setting a lower value for minimum window size (-d parameter, default 2000000)"
-  fi && \
+  fi
   log "Found $NUM_INTERVALS interval in intervals.txt" && \
   touch intervals.success && rm -f prepare.success examine_indels.success examine_genes.success || error_exit "Computing intervals failed"
 fi
