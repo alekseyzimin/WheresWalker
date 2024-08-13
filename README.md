@@ -1,7 +1,12 @@
-# WheresWally
-WheresWally is the software pipeline that helps identify regions of homozygosity to assist in experiments that help relate genotype to phenotype in genes with recessive mutations.
+# WheresWalker
+WheresWalker is the software pipeline that helps identify regions of homozygosity to assist in experiments that help relate genotype to phenotype in genes with recessive mutations.
 
 # Installation
+Whereswalker is written in Bash and Perl, it is cross-platform compatible and no compilation is needed.  To install, run:
+```
+git clone https://github.com/alekseyzimin/WheresWalker
+```
+The main executable is whereswalker.sh. Whereswalker also included as slightly modified for compatibility version of ANNOVAR software.
 
 # Usage
 ```
