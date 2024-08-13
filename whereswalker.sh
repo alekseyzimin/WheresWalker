@@ -38,7 +38,7 @@ function error_exit {
 
 function usage {
 echo "Usage:"
-echo "evaluate_mutations.sh [arguments]"
+echo "whereswalker.sh [arguments]"
 echo "-m <mutant vcf file>:path MANDATORY"
 echo "-w <wild type vcf file>:path MANDATORY"
 echo "-a <annotation gtf file>:path MANDATORY"
