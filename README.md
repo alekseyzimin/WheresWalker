@@ -11,14 +11,14 @@ The main executable is whereswalker.sh. Whereswalker also includes as slightly m
 # Usage
 ```
 whereswalker.sh [arguments]
--m <mutant vcf file>:path MANDATORY
--w <wild type vcf file>:path MANDATORY
--a <annotation gtf file>:path MANDATORY
--g <genome fasta file>:path MANDATORY
--f <GVF file:string optional>
--t <starting threshold, the program will iterate down from this threshold, until an interval is found>:float default:4
--v verbose switch
--h help message
+-m PATH  mutant vcf file MANDATORY
+-w PATH  wild type vcf file MANDATORY
+-a PATH  annotation gtf file MANDATORY
+-g PATH  genome fasta file MANDATORY
+-f PATH  GVF file (see https://github.com/The-Sequence-Ontology/Specifications/blob/master/gvf.md) optional
+-t FLOAT starting threshold, the program will iterate down from this threshold, until an interval is found: default:4.0
+-v       verbose switch
+-h       this message
 ```
 The GVF (Genome Variation Format) file for the organism is used to optionally screen for known mutations, using Ensembl data.  The GVF format is described here: https://github.com/The-Sequence-Ontology/Specifications/blob/master/gvf.md. From the link:
 ```
