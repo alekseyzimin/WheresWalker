@@ -20,4 +20,15 @@ whereswalker.sh [arguments]
 -v verbose switch
 -h help message
 ```
-The GVF (Genome Variation Format) file for the organism is used to optionally screen for known mutations, using Ensembl data.  The GVF format is sescribed here: https://github.com/The-Sequence-Ontology/Specifications/blob/master/gvf.md.
+The GVF (Genome Variation Format) file for the organism is used to optionally screen for known mutations, using Ensembl data.  The GVF format is described here: https://github.com/The-Sequence-Ontology/Specifications/blob/master/gvf.md. From the link:
+```
+ENSEMBL is providing GVF files for their sequence_alteration data sets at:
+
+ftp://ftp.ensembl.org/pub/current_variation/gvf/
+Data from NCBI
+The dbVar database at NCBI is providing GVF files for their structural variant data at:
+
+ftp://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_assembly/NCBI36/gvf/
+ftp://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_assembly/GRCh37/gvf/
+ftp://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_assembly/GRCh38/gvf/
+```
