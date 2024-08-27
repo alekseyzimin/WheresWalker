@@ -6,11 +6,11 @@ Whereswalker is written in Bash and Perl, it is cross-platform compatible and no
 ```
 git clone https://github.com/alekseyzimin/WheresWalker
 ```
-The main executable is whereswalker.sh. Whereswalker also included as slightly modified for compatibility version of ANNOVAR software.
+The main executable is whereswalker.sh. Whereswalker also includes as slightly modified for compatibility version of ANNOVAR software.
 
 # Usage
 ```
-evaluate_mutations.sh [arguments]
+whereswalker.sh [arguments]
 -m <mutant vcf file>:path MANDATORY
 -w <wild type vcf file>:path MANDATORY
 -a <annotation gtf file>:path MANDATORY
@@ -20,3 +20,4 @@ evaluate_mutations.sh [arguments]
 -v verbose switch
 -h help message
 ```
+The GVF (Genome Variation Format) file for the organism is used to optionally screen for known mutations, using Ensembl data.  The GVF format is sescribed here: https://github.com/The-Sequence-Ontology/Specifications/blob/master/gvf.md.
