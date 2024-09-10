@@ -32,4 +32,4 @@ ftp://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_assembly/NCBI36/gvf/
 ftp://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_assembly/GRCh37/gvf/
 ftp://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_assembly/GRCh38/gvf/
 ```
-WheresWalker expectc VCF format that is produced by freebayes software with column 10 in format 
+WheresWalker expectc VCF format that is produced by freebayes software with column 10 in the following format: GT:DP:AD:RO:QR:AO:QA:GL.  The relevant values from column 10 that are used by the pipeline are 4th and 6th (RO and AO).
